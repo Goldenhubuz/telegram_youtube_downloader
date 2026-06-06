@@ -80,10 +80,10 @@ class YoutubeDownloader:
 				duration = meta.get("duration", None)
 				if duration is None:
 					raise DownloadError(f"Cannot get video duration")
-				if duration > max_duration:
-					raise DownloadError(
-						f"Maximum allowed video duration for '{content_type.value}' download is {str(datetime.timedelta(seconds=max_duration))}"
-					)
+				# if duration > max_duration or True:  # Temporary remove duration check until we find a way to get duration for all formats (ex: audio only formats)
+				# 	raise DownloadError(
+				# 		f"Maximum allowed video duration for '{content_type.value}' download is {str(datetime.timedelta(seconds=max_duration))}"
+				# 	)
 
 				# Download
 				meta = ydl.extract_info(url, download=True)
