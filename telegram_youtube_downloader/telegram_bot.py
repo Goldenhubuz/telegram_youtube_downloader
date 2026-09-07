@@ -58,6 +58,15 @@ class TelegramBot:
 				f"Exception while handling an update {update}", exc_info=context.error
 			)
 
+		@TelegramBotErrorHandler.command_handler(command_usage="/start")
+		@TelegramBotCommandInterceptor.secured_command(function_claims={"all", "start"})
+		async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+			message = update.message
+			if message is None:
+				return
+
+			await message.reply_text("Bot is running 🚀")
+
 		@TelegramBotErrorHandler.command_handler(command_usage="/about")
 		@TelegramBotCommandInterceptor.secured_command(function_claims={"all", "about"})
 		async def about(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -350,15 +359,23 @@ class TelegramBot:
 
 		application_builder = Application.builder().token(self.__bot_key)
 
-		if self.__base_url is not None:
+		if self.__base_url:
 			self.__logger.info(f"Using custom api url ({self.__base_url})")
+
 			application_builder.base_url(self.__base_url)
+
+			file_url = self.__base_url.rstrip("/")
+			if file_url.endswith("/bot"):
+				file_url = file_url[:-4] + "/file/bot"
+
+			application_builder.base_file_url(file_url)
 
 		application = application_builder.build()
 
 		self.__logger.info("Bot created, starting pooling")
 
 		# Command handler
+		application.add_handler(CommandHandler("start", start))
 		application.add_handler(CommandHandler("about", about))
 		application.add_handler(CommandHandler("help", help))
 		application.add_handler(CommandHandler("formats", formats))
